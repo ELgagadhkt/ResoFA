@@ -6,24 +6,63 @@ import java.net.SocketException;
 
 public class Com extends Thread {
 
-    public Com(InetAddress IP_C, int P_C) {
+    private InetAddress IP_C;
+    private int P_C;
+
+    public InetAddress getIP_C() {
+        return IP_C;
+    }
+
+    public void setIP_C(InetAddress IP_C) {
+        this.IP_C = IP_C;
+    }
+
+    public int getP_C() {
+        return P_C;
+    }
+
+    public void setP_C(int p_C) {
+        P_C = p_C;
+    }
+
+    public Com(InetAddress IP_C, int p_C) {
+        this.IP_C = IP_C;
+        this.P_C = p_C;
+    }
+
+    @Override
+    public void run() {
         try {
-            DatagramSocket server = new DatagramSocket(P_C);
+            // Connection
+            DatagramSocket server = new DatagramSocket();
 
-            byte[] buffer = new byte[8192];
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-            server.receive(packet);
+            byte[] buffer = new String("Changement d'adresse ! ").getBytes();
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length, IP_C, P_C);
+            server.send(packet);
+            packet.setLength(buffer.length);
 
-            byte[] buffer2 = new String("Réponse du serveur à " + "! ").getBytes();
-            DatagramPacket packet2 = new DatagramPacket(buffer2, buffer2.length,  IP_C,  P_C);
-            server.send(packet2);
-            packet2.setLength(buffer2.length);
+            while (true) {
+                // Reception request
+                byte[] rBuffer = new byte[8196];
+                DatagramPacket rPacket = new DatagramPacket(rBuffer, rBuffer.length);
+                server.receive(rPacket);
 
-        } catch (SocketException e) {
-            e.printStackTrace();
+                // Traitement
+                rPacket.setLength(rBuffer.length);
+
+                String str = new String(rPacket.getData());
+                str = str.split(" ")[0];
+                System.out.println("Reçu de la part de " + rPacket.getAddress()
+                        + " sur le port " + rPacket.getPort() + " : " + str);
+
+                // Envoie réponse
+                byte[] sBuffer = new String("Réponse du com à " + IP_C.toString() + "! ").getBytes();
+                DatagramPacket sPacket = new DatagramPacket(sBuffer, sBuffer.length, IP_C, P_C);
+                server.send(sPacket);
+                sPacket.setLength(sBuffer.length);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 }

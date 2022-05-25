@@ -36,16 +36,25 @@ public class clientUDP {
                 System.out.print(envoi + " a reçu une réponse du serveur : ");
                 System.out.println(new String(packet2.getData()));
 
+                // Echo
+                packet = new DatagramPacket(buffer, buffer.length, packet2.getAddress(), packet2.getPort());
+                packet.setData(buffer);
+
+                client.send(packet);
+
+                buffer2 = new byte[8196];
+                packet2 = new DatagramPacket(buffer2, buffer2.length, packet2.getAddress(), packet2.getPort());
+                client.receive(packet2);
+
+                System.out.print(envoi + " a reçu une réponse du serveur : ");
+                System.out.println(new String(packet2.getData()));
+
                 try {
                     Thread.sleep(sleepTime);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
                 client.close();
-            } catch (SocketException e) {
-                e.printStackTrace();
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
